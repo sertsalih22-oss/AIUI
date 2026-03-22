@@ -1,0 +1,61 @@
+﻿<Window x:Class="AIUI_0._1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="AI Sohbet Yöneticisi" Height="700" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="#F3F4F6">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#1F2937" Padding="15">
+            <StackPanel>
+                <TextBlock Text="Kategoriler" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                <Button Content="Tüm Sohbetler" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="C# Projeleri" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="Oyun Modlama" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="Yapay Zeka" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="İçe Aktarılanlar" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="15" Background="White">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,15">
+                <TextBlock Text="Sohbetlerin" FontSize="20" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="🔄 Geçmişi Çek" Width="100" Height="30" Background="#3B82F6" Foreground="White" BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" Click="SyncChats_Click"/>
+                    <Button Content="+ Yeni" Width="60" Height="30" Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand" Click="NewChat_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <ListView x:Name="ChatList" Grid.Row="1" BorderBrush="#E5E7EB" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ChatList_SelectionChanged">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="10" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Width="310" Cursor="Hand" Background="Transparent">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium" Foreground="#1F2937" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#6B7280" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+        <Border Grid.Column="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="1,0,0,0">
+            <wv2:WebView2 x:Name="ChatBrowser" />
+        </Border>
+    </Grid>
+</Window>
