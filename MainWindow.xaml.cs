@@ -28,7 +28,7 @@ namespace AIUI_0._1
                 db.Database.EnsureCreated();
 
                 // 3. Veritabanındaki tüm sohbetleri çekiyoruz (Şu an içi boş gelecek)
-                var savedChats = db.Chats.ToList();
+                var savedChats = db.Chats.OrderByDescending(c => c.AddedDate).ToList();
 
                 // 4. Çektiğimiz gerçek verileri arayüze (ObservableCollection) yüklüyoruz
                 Chats = new ObservableCollection<Chat>(savedChats);
@@ -177,7 +177,7 @@ namespace AIUI_0._1
             using (var db = new AppDbContext())
             {
                 Chats.Clear();
-                var currentChats = db.Chats.ToList();
+                var currentChats = db.Chats.OrderByDescending(c => c.AddedDate).ToList();
                 foreach (var chat in currentChats)
                 {
                     Chats.Add(chat);
@@ -187,8 +187,13 @@ namespace AIUI_0._1
 
         private void NewChat_Click(object sender, RoutedEventArgs e)
         {
+            string currentUrl = "";
             // Yeni ekleme penceresini oluşturuyoruz
-            AddChatWindow addWindow = new AddChatWindow();
+            if (ChatBrowser != null && ChatBrowser.Source != null)
+            {
+                currentUrl = ChatBrowser.Source.ToString();
+            }
+            AddChatWindow addWindow = new AddChatWindow(currentUrl);
 
             // Pencereyi "Dialog" olarak açıyoruz (Yani bu pencere kapanmadan arkaya tıklanamaz)
             addWindow.Owner = this;
@@ -201,13 +206,54 @@ namespace AIUI_0._1
                 using (var db = new AppDbContext())
                 {
                     Chats.Clear(); // Eski listeyi temizle
-                    var currentChats = db.Chats.ToList(); // Veritabanındaki yeni listeyi getir
+                    var currentChats = db.Chats.OrderByDescending(c => c.AddedDate).ToList();
                     foreach (var chat in currentChats)
                     {
                         Chats.Add(chat); // Arayüzü güncelle
                     }
                 }
             }
+        }
+
+        private void CategoryFilter_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. Hangi butona tıklandığını yakalıyoruz
+            if (sender is Button clickedButton)
+            {
+                // Butonun üzerindeki yazıyı (Content) alıyoruz (Örn: "C# Projeleri")
+                string selectedCategory = clickedButton.Content.ToString();
+
+                // 2. Veritabanına bağlanıp filtreleme yapıyoruz
+                using (var db = new AppDbContext())
+                {
+                    Chats.Clear(); // Ekrandaki mevcut listeyi temizle
+
+                    List<Chat> filteredChats;
+
+                    // Eğer "Tüm Sohbetler" seçildiyse hepsini getir
+                    if (selectedCategory == "Tüm Sohbetler")
+                    {
+                        filteredChats = db.Chats.ToList();
+                    }
+                    // Değilse, veritabanına sadece o kategoriye ait olanları getirmesini söyle
+                    else
+                    {
+                        // LINQ Gücü: SQL'deki "WHERE Category = 'seçilen_kategori'" sorgusunu otomatik oluşturur
+                        filteredChats = db.Chats.Where(c => c.Category == selectedCategory).ToList();
+                    }
+
+                    // 3. Veritabanından gelen filtrelenmiş sonuçları arayüze (ObservableCollection) ekle
+                    foreach (var chat in filteredChats)
+                    {
+                        Chats.Add(chat);
+                    }
+                }
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            ChatBrowser.Source = new Uri("https://gemini.google.com/app");
         }
     }
 

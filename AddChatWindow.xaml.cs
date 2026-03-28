@@ -7,9 +7,15 @@ namespace AIUI_0._1
 {
     public partial class AddChatWindow : Window
     {
-        public AddChatWindow()
-        {
+        public AddChatWindow(string incomingUrl = "")
+        {   
             InitializeComponent();
+            if (!string.IsNullOrEmpty(incomingUrl))
+            {
+                // XAML tarafındaki URL gireceğin TextBox'ın adının 'txtUrl' olduğunu varsayıyorum. 
+                // Senin projendeki ismi neyse ('UrlTextBox' vb.) burayı ona göre değiştir.
+                txtUrl.Text = incomingUrl;
+            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)

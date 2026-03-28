@@ -17,11 +17,11 @@
             <StackPanel>
                 <TextBlock Text="Kategoriler" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
 
-                <Button Content="Tüm Sohbetler" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-                <Button Content="C# Projeleri" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-                <Button Content="Oyun Modlama" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-                <Button Content="Yapay Zeka" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-                <Button Content="İçe Aktarılanlar" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="Tüm Sohbetler" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="C# Projeleri" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="Oyun Modlama" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="Yapay Zeka" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
+                <Button Content="İçe Aktarılanlar" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
             </StackPanel>
         </Border>
 
@@ -36,7 +36,8 @@
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="🔄 Geçmişi Çek" Width="100" Height="30" Background="#3B82F6" Foreground="White" BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" Click="SyncChats_Click"/>
-                    <Button Content="+ Yeni" Width="60" Height="30" Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand" Click="NewChat_Click"/>
+                    <Button Content="Ekle" Width="40" Height="30" Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand" Click="NewChat_Click" Margin="0,0,10,0"/>
+                    <Button Content="Yeni" Width="40" Height="30" Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand" Click="Button_Click"/>
                 </StackPanel>
             </Grid>
 
