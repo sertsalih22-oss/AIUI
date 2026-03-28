@@ -1,5 +1,5 @@
-﻿using AIUI_0._1.Data;
-using AIUI_0._1.Models;
+﻿using AIUI.Data;
+using AIUI.Models;
 using Microsoft.Web.WebView2.Core; // WebView2 çekirdek ayarları için eklendi
 using System;
 using System.Collections.ObjectModel;
@@ -10,7 +10,7 @@ using System.Windows.Controls;
 using System.Text.Json;
 using System.Collections.Generic;
 
-namespace AIUI_0._1
+namespace AIUI
 {
     public partial class MainWindow : Window
     {
@@ -44,9 +44,9 @@ namespace AIUI_0._1
             try
             {
                 // 1. Çerezlerin ve oturumun kaydedileceği klasör yolunu belirliyoruz.
-                // Windows'taki "AppData/Local/AIUI_0._1_Data" klasörünü kullanacağız.
+                // Windows'taki "AppData/Local/AIUI_Data" klasörünü kullanacağız.
                 string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string userDataFolder = Path.Combine(appDataPath, "AIUI_0._1_Data");
+                string userDataFolder = Path.Combine(appDataPath, "AIUI_Data");
 
                 // 2. WebView2 ortamını bu klasörle oluşturuyoruz.
                 var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);

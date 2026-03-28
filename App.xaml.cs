@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace AIUI_0._1
+namespace AIUI
 {
     /// <summary>
     /// Interaction logic for App.xaml

@@ -1,9 +1,9 @@
-﻿using AIUI_0._1.Models; // Chat modelimizi kullanabilmek için
+﻿using AIUI.Models; // Chat modelimizi kullanabilmek için
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
 
-namespace AIUI_0._1.Data
+namespace AIUI.Data
 {
     // EF Core'un veritabanı özelliklerini kullanmak için DbContext sınıfından miras alıyoruz
     public class AppDbContext : DbContext
@@ -17,7 +17,7 @@ namespace AIUI_0._1.Data
             // Veritabanı dosyasının (.db) nereye kaydedileceğini belirliyoruz.
             // WebView2 çerezlerini kaydettiğimiz güvenli AppData klasörünü kullanmak en sağlıklı yöntemdir.
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string dbFolder = Path.Combine(appDataPath, "AIUI_0._1_Data");
+            string dbFolder = Path.Combine(appDataPath, "AIUI_Data");
 
             // Eğer klasör bilgisayarda yoksa, hata vermemesi için oluşturuyoruz
             if (!Directory.Exists(dbFolder))

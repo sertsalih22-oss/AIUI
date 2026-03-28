@@ -1,4 +1,4 @@
-﻿<Window x:Class="AIUI_0._1.AddChatWindow"
+﻿<Window x:Class="AIUI.AddChatWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Yeni Sohbet Ekle" Height="350" Width="400"

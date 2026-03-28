@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Windows;
 // Chat modelini tanıması için bu satır kesinlikle olmalı!
-using AIUI_0._1.Models;
-using AIUI_0._1.Data;
+using AIUI.Models;
+using AIUI.Data;
 
-namespace AIUI_0._1
+namespace AIUI
 {
     public partial class AddChatWindow : Window
     {
