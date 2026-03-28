@@ -66,13 +66,19 @@ namespace AIUI_0._1
         // ======================================================
 
         // Listeden seçim yapıldığında çalışan kodumuz (Bu kısım aynı kalıyor)
-        private void ChatList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ChatBorder_LeftClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (ChatList.SelectedItem is Chat selectedChat)
+            // 1. Tıklanan kutucuğu (Border) yakalıyoruz
+            var border = sender as Border;
+
+            // 2. O kutucuğun içine hapsolmuş olan veriyi (Chat nesnesini) çıkartıyoruz
+            var selectedChat = border?.DataContext as Chat;
+
+            // 3. Eğer veri başarıyla alındıysa, tarayıcıda açıyoruz
+            if (selectedChat != null)
             {
                 try
                 {
-                    // Eğer tarayıcı hazırsa (CoreWebView2 null değilse) adrese git
                     if (ChatBrowser != null && ChatBrowser.CoreWebView2 != null)
                     {
                         ChatBrowser.Source = new Uri(selectedChat.Url);
@@ -84,7 +90,6 @@ namespace AIUI_0._1
                 }
             }
         }
-
         private async void SyncChats_Click(object sender, RoutedEventArgs e)
         {
             // 1. Tarayıcının hazır ve Gemini sayfasında olduğundan emin olalım
@@ -254,6 +259,51 @@ namespace AIUI_0._1
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             ChatBrowser.Source = new Uri("https://gemini.google.com/app");
+        }
+        // --- SİLME FONKSİYONU ---
+        private void DeleteChat_Click(object sender, RoutedEventArgs e)
+        {
+            // Sağ tıklanan menü elemanını ve içindeki veriyi (Chat nesnesini) yakalıyoruz
+            var menuItem = sender as MenuItem;
+            var selectedChat = menuItem?.DataContext as Chat;
+
+            if (selectedChat != null)
+            {
+                // Kullanıcıya yanlışlıkla silmeye karşı bir onay soralım
+                var result = MessageBox.Show($"'{selectedChat.Title}' sohbetini silmek istediğine emin misin?",
+                                             "Silme Onayı", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        db.Chats.Remove(selectedChat); // Veritabanından sil komutu
+                        db.SaveChanges();              // Değişiklikleri kaydet
+                    }
+                    RefreshChatList(); // Listeyi yenile (Zaten yazdığımız metot)
+                }
+            }
+        }
+
+        // --- DÜZENLEME FONKSİYONU ---
+        private void EditChat_Click(object sender, RoutedEventArgs e)
+        {
+            // Yine sağ tıklanan satırdaki veriyi yakalıyoruz
+            var menuItem = sender as MenuItem;
+            var selectedChat = menuItem?.DataContext as Chat;
+
+            if (selectedChat != null)
+            {
+                // AddChatWindow'u açarken, seçilen sohbetin tüm verilerini içine fırlatıyoruz
+                AddChatWindow editWindow = new AddChatWindow(selectedChat);
+                editWindow.Owner = this;
+
+                // Pencere kapanıp true dönerse (başarıyla kaydedilirse) listeyi yenile
+                if (editWindow.ShowDialog() == true)
+                {
+                    RefreshChatList();
+                }
+            }
         }
     }
 

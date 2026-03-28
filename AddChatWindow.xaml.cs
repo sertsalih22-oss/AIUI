@@ -1,63 +1,68 @@
 ﻿using System;
 using System.Windows;
-using AIUI_0._1.Data;
+// Chat modelini tanıması için bu satır kesinlikle olmalı!
 using AIUI_0._1.Models;
+using AIUI_0._1.Data;
 
 namespace AIUI_0._1
 {
     public partial class AddChatWindow : Window
     {
+        // Düzenlenecek sohbeti hafızada tutmak için değişken
+        private Chat _chatToEdit = null;
+
+        // 1. YAPICI METOT: Sadece URL ile yeni sohbet eklerken çalışır
         public AddChatWindow(string incomingUrl = "")
-        {   
+        {
             InitializeComponent();
-            if (!string.IsNullOrEmpty(incomingUrl))
-            {
-                // XAML tarafındaki URL gireceğin TextBox'ın adının 'txtUrl' olduğunu varsayıyorum. 
-                // Senin projendeki ismi neyse ('UrlTextBox' vb.) burayı ona göre değiştir.
-                txtUrl.Text = incomingUrl;
-            }
+            txtUrl.Text = incomingUrl;
         }
 
+        // 2. YAPICI METOT (Hata veren kısmı çözen kod): Düzenleme yaparken çalışır
+        public AddChatWindow(Chat chatToEdit)
+        {
+            InitializeComponent();
+
+            // Gelen sohbet verisini hafızaya alıyoruz
+            _chatToEdit = chatToEdit;
+
+            // Ekrandaki kutucukları mevcut bilgilerle dolduruyoruz
+            txtTitle.Text = chatToEdit.Title;
+            cmbCategory.Text = chatToEdit.Category;
+            txtUrl.Text = chatToEdit.Url;
+        }
+
+        // --- Kaydet Butonu Tıklanma Olayı ---
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Kullanıcının girdiği verileri alıyoruz
-            string title = txtTitle.Text;
-            string url = txtUrl.Text;
-            string category = cmbCategory.Text;
-
-            // 2. Boş alan kontrolü yapıyoruz
-            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(url))
+            using (var db = new AppDbContext())
             {
-                MessageBox.Show("Lütfen başlık ve URL alanlarını doldurun.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // 3. Yeni bir Chat nesnesi oluşturuyoruz
-            var newChat = new Chat
-            {
-                Title = title,
-                Url = url,
-                Category = category,
-                AddedDate = DateTime.Now
-            };
-
-            // 4. Veritabanına (SQLite) bağlanıp kaydediyoruz
-            try
-            {
-                using (var db = new AppDbContext())
+                // Eğer hafızada düzenlenecek bir sohbet varsa (Yani 2. metot çalıştıysa)
+                if (_chatToEdit != null)
                 {
-                    db.Chats.Add(newChat); // Nesneyi tabloya ekle
-                    db.SaveChanges();      // Değişiklikleri kalıcı olarak dosyaya yaz
+                    _chatToEdit.Title = txtTitle.Text;
+                    _chatToEdit.Category = cmbCategory.Text;
+                    _chatToEdit.Url = txtUrl.Text;
+
+                    db.Chats.Update(_chatToEdit); // Veriyi GÜNCELLE
+                }
+                // Eğer hafıza boşsa (Yani 1. metot çalıştıysa)
+                else
+                {
+                    Chat newChat = new Chat
+                    {
+                        Title = txtTitle.Text,
+                        Category = cmbCategory.Text,
+                        Url = txtUrl.Text,
+                        AddedDate = DateTime.Now
+                    };
+                    db.Chats.Add(newChat); // Yeni veri EKLE
                 }
 
-                // İşlem başarılıysa pencereyi kapatıyoruz
-                this.DialogResult = true;
-                this.Close();
+                db.SaveChanges();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Kaydetme sırasında bir hata oluştu: {ex.Message}");
-            }
+
+            this.DialogResult = true;
         }
     }
 }

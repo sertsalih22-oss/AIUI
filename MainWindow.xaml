@@ -41,10 +41,18 @@
                 </StackPanel>
             </Grid>
 
-            <ListView x:Name="ChatList" Grid.Row="1" BorderBrush="#E5E7EB" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ChatList_SelectionChanged">
+            <ListView x:Name="ChatList" Grid.Row="1" BorderBrush="#E5E7EB" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Border Padding="10" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Width="310" Cursor="Hand" Background="Transparent">
+                        <Border MouseLeftButtonUp="ChatBorder_LeftClick" Padding="10" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Width="310" Cursor="Hand" Background="Transparent">
+
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Düzenle" Click="EditChat_Click"/>
+                                    <MenuItem Header="Sil" Click="DeleteChat_Click" Foreground="Red"/>
+                                </ContextMenu>
+                            </Border.ContextMenu>
+
                             <StackPanel>
                                 <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium" Foreground="#1F2937" TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#6B7280" Margin="0,4,0,0"/>
