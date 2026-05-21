@@ -1,7 +1,7 @@
-﻿<Application x:Class="AIUI.App"
+﻿<Application x:Class="ThreadBase.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:AIUI"
+             xmlns:local="clr-namespace:ThreadBase"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

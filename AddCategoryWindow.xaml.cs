@@ -1,5 +1,5 @@
-﻿using AIUI.Data;
-using AIUI.Models;
+﻿using ThreadBase.Data;
+using ThreadBase.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace AIUI
+namespace ThreadBase
 {
     /// <summary>
     /// AddCategoryWindow.xaml etkileşim mantığı

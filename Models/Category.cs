@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 
-namespace AIUI.Models
+namespace ThreadBase.Models
 {
     public class Category
     {

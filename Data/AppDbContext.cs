@@ -1,9 +1,9 @@
-﻿using AIUI.Models; // Chat modelimizi kullanabilmek için
+﻿using ThreadBase.Models; // Chat modelimizi kullanabilmek için
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
 
-namespace AIUI.Data
+namespace ThreadBase.Data
 {
     // EF Core'un veritabanı özelliklerini kullanmak için DbContext sınıfından miras alıyoruz
     public class AppDbContext : DbContext

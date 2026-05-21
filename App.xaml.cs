@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace AIUI
+namespace ThreadBase
 {
     /// <summary>
     /// Interaction logic for App.xaml

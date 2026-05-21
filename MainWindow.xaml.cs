@@ -1,5 +1,5 @@
-﻿using AIUI.Data;
-using AIUI.Models;
+﻿using ThreadBase.Data;
+using ThreadBase.Models;
 using Microsoft.Web.WebView2.Core; // WebView2 çekirdek ayarları için eklendi
 using System;
 using System.Collections.ObjectModel;
@@ -9,8 +9,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Text.Json;
 using System.Collections.Generic;
+using ThreadBase.Properties;
 
-namespace AIUI
+namespace ThreadBase
 {
     public partial class MainWindow : Window
     {
@@ -76,7 +77,10 @@ namespace AIUI
 
                 // 4. Uygulama ilk açıldığında doğrudan Gemini ana sayfasını yükleyelim ki
                 // kullanıcı ilk girişini (Login) yapabilsin.
-                ChatBrowser.Source = new Uri("https://gemini.google.com");
+                if(Settings.Default.DefaultAI == "Chatgpt") { ChatBrowser.Source = new Uri("https://chatgpt.com"); }
+                else if (Settings.Default.DefaultAI == "Claude") { ChatBrowser.Source = new Uri("https://claude.ai"); }
+                else { ChatBrowser.Source = new Uri("https://gemini.google.com"); }
+                    
             }
             catch (Exception ex)
             {
@@ -112,67 +116,102 @@ namespace AIUI
         }
         private async void SyncChats_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Tarayıcının hazır ve Gemini sayfasında olduğundan emin olalım
-            if (ChatBrowser.CoreWebView2 == null)
+            // 1. Tarayıcının hazır olduğundan emin olalım
+            if (ChatBrowser.CoreWebView2 == null || ChatBrowser.Source == null)
             {
-                MessageBox.Show("Tarayıcı henüz yüklenmedi.");
+                MessageBox.Show("Tarayıcı henüz yüklenmedi veya geçerli bir sayfada değil.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             try
             {
-                // 2. JavaScript Kodumuz: Sayfadaki sol menüyü tarayıp linkleri ve başlıkları toplayacak
-                // Not: Gemini'nin web yapısı zamanla değişebilir, bu kod o anki 'a' (link) etiketlerini hedefler.
-                string jsCode = @"
-            (() => {
-                let chatList = [];
-                // Gemini'de sohbet linkleri genellikle '/app/' ile başlar
-                let links = document.querySelectorAll('a[href^=""/app/""]');
-                
-                links.forEach(link => {
-                    let title = link.textContent.trim();
-                    let url = link.href;
-                    
-                    // Eğer başlık boş değilse ve listemizde yoksa ekle
-                    if(title && title.length > 0) {
-                        chatList.push({ Title: title, Url: url, Category: 'İçe Aktarılanlar' });
-                    }
-                });
-                
-                // C#'a göndermek için JSON formatına çeviriyoruz
-                return JSON.stringify(chatList);
-            })();
-        ";
+                // O an açık olan sitenin domain adresini alıyoruz (Örn: gemini.google.com, chatgpt.com)
+                string currentHost = ChatBrowser.Source.Host.ToLower();
+                string jsCode = "";
 
-                // 3. JavaScript'i tarayıcıda çalıştır ve sonucu al
+                // 2. AKILLI SEÇİCİ MOTORU: Hangi sitedeysek ona özel JS kodunu hazırlıyoruz
+                if (currentHost.Contains("gemini.google.com"))
+                {
+                    jsCode = @"
+                (() => {
+                    let chatList = [];
+                    let links = document.querySelectorAll('a[href^=""/app/""]');
+                    links.forEach(link => {
+                        let title = link.textContent.trim();
+                        let url = link.href;
+                        if(title && title.length > 0) {
+                            chatList.push({ Title: title, Url: url });
+                        }
+                    });
+                    return JSON.stringify(chatList);
+                })();";
+                }
+                else if (currentHost.Contains("chatgpt.com") || currentHost.Contains("openai.com"))
+                {
+                    // ChatGPT sol menüdeki geçmiş linkleri '/c/' ile başlar
+                    jsCode = @"
+                (() => {
+                    let chatList = [];
+                    let links = document.querySelectorAll('a[href*=""/c/""]');
+                    links.forEach(link => {
+                        let title = link.textContent.trim();
+                        let url = link.href;
+                        if(title && title.length > 0) {
+                            chatList.push({ Title: title, Url: url });
+                        }
+                    });
+                    return JSON.stringify(chatList);
+                })();";
+                }
+                else if (currentHost.Contains("claude.ai"))
+                {
+                    // Claude sol menüdeki geçmiş linkleri '/chat/' ile başlar
+                    jsCode = @"
+                (() => {
+                    let chatList = [];
+                    let links = document.querySelectorAll('a[href*=""/chat/""]');
+                    links.forEach(link => {
+                        let title = link.textContent.trim();
+                        let url = link.href;
+                        if(title && title.length > 0) {
+                            chatList.push({ Title: title, Url: url });
+                        }
+                    });
+                    return JSON.stringify(chatList);
+                })();";
+                }
+                else
+                {
+                    MessageBox.Show("Bu sayfada otomatik senkronizasyon desteklenmiyor. Lütfen Gemini, ChatGPT veya Claude sayfalarından birine gidin.", "Desteklenmeyen Site", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // 3. Hazırlanan dinamik JavaScript'i tarayıcıda çalıştır
                 string jsonResult = await ChatBrowser.CoreWebView2.ExecuteScriptAsync(jsCode);
 
-                // ExecuteScriptAsync sonucu çift tırnaklı (stringified string) döner, bunu temizlememiz lazım
                 if (jsonResult != "null" && jsonResult != "\"[]\"")
                 {
-                    // Çift tırnakları ve kaçış karakterlerini temizliyoruz
                     string cleanJson = JsonSerializer.Deserialize<string>(jsonResult);
-
-                    // JSON metnini bizim C# Chat nesneleri listesine dönüştürüyoruz
                     var importedChats = JsonSerializer.Deserialize<List<Chat>>(cleanJson);
 
                     int eklenecekSayi = 0;
 
-                    // 4. Gelen listeyi veritabanımıza kaydediyoruz
+                    // 4. Veritabanına kayıt süreci
                     using (var db = new AppDbContext())
                     {
-                        // Veritabanındaki "İçe Aktarılanlar" kategorisinin ID'sini buluyoruz
+                        // 'İçe Aktarılanlar' kategorisinin ID'sini bul, yoksa Genel'e (1) ata
                         var iceAktarilanlarCat = db.Categories.FirstOrDefault(c => c.Name == "İçe Aktarılanlar");
                         int targetCategoryId = iceAktarilanlarCat != null ? iceAktarilanlarCat.Id : 1;
 
                         foreach (var chat in importedChats)
                         {
+                            // Eğer bu URL veritabanında zaten yoksa ekle (Mükerrer kaydı önleme)
                             bool exists = db.Chats.Any(c => c.Url == chat.Url);
 
                             if (!exists)
                             {
                                 chat.AddedDate = DateTime.Now;
-                                chat.CategoryId = targetCategoryId; // ARTIK STRING DEĞİL, GEÇERLİ ID'Yİ ATIYORUZ!
+                                chat.CategoryId = targetCategoryId;
                                 db.Chats.Add(chat);
                                 eklenecekSayi++;
                             }
@@ -180,21 +219,24 @@ namespace AIUI
                         db.SaveChanges();
                     }
 
-                    // 5. Arayüzü güncelle
                     if (eklenecekSayi > 0)
                     {
-                        MessageBox.Show($"{eklenecekSayi} adet eski sohbet başarıyla çekildi!", "Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
-                        RefreshChatList(); // Arayüzdeki listeyi yenileyen metodumuz
+                        MessageBox.Show($"{eklenecekSayi} adet sohbet geçmişi başarıyla sisteme aktarıldı!", "Senkronizasyon Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
+                        RefreshChatList();
                     }
                     else
                     {
-                        MessageBox.Show("Yeni sohbet bulunamadı veya hepsi zaten ekli.", "Bilgi");
+                        MessageBox.Show("Yeni bir sohbet bulunamadı. Mevcut tüm geçmişiniz zaten güncel.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
+                }
+                else
+                {
+                    MessageBox.Show("Açık olan sohbet geçmişi listesinden veri sökülemedi. Lütfen ilgili AI hesabınıza giriş yaptığınızdan emin olun.", "Veri Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Senkronizasyon sırasında hata: {ex.Message}");
+                MessageBox.Show($"Senkronizasyon motoru çalışırken bir hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -243,7 +285,14 @@ namespace AIUI
         }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            ChatBrowser.Source = new Uri("https://gemini.google.com/app");
+            AISelectorWindow AISelectorWindow = new AISelectorWindow();
+            AISelectorWindow.Owner = this;
+            bool? result = AISelectorWindow.ShowDialog();
+            if (result == true)
+            {
+                ChatBrowser.Source = new Uri(AISelectorWindow.SelectedUrl);
+            }
+            
         }
         // --- SİLME FONKSİYONU ---
         private void DeleteChat_Click(object sender, RoutedEventArgs e)

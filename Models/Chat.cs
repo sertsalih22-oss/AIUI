@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AIUI.Models
+namespace ThreadBase.Models
 {
     public class Chat
     {

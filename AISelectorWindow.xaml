@@ -1,0 +1,26 @@
+﻿<Window x:Class="ThreadBase.AISelectorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Yapay Zeka Motoru Seç" Height="330" Width="449"
+        WindowStartupLocation="CenterOwner"
+        Background="#F9FAFB"
+        ResizeMode="NoResize">
+    <Grid Margin="20">
+        <StackPanel>
+            <TextBlock Text="Yapay Zeka Motoru Seçin" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+            <TextBlock Text="Başlatmak istediğiniz yapay zeka modelini seçin:" Foreground="#4B5563" Margin="0,0,0,15"/>
+
+            <Border BorderBrush="#E5E7EB" BorderThickness="1" Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <RadioButton x:Name="rbGemini" Content="Google Gemini" IsChecked="True" FontSize="14" Foreground="#1F2937" Margin="0,5"/>
+                    <RadioButton x:Name="rbChatGPT" Content="OpenAI ChatGPT" FontSize="14" Foreground="#1F2937" Margin="0,5"/>
+                    <RadioButton x:Name="rbClaude" Content="Anthropic Claude" FontSize="14" Foreground="#1F2937" Margin="0,5"/>
+                </StackPanel>
+            </Border>
+
+            <CheckBox x:Name="chkMakeDefault" Content="Uygulama açılışında her zaman bu modeli aç" Foreground="#4B5563" Margin="0,0,0,20" Cursor="Hand"/>
+
+            <Button Content="Motoru Başlat" Background="#3B82F6" Foreground="White" Height="35" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="StartButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
