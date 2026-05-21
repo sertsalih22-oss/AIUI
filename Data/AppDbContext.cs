@@ -10,7 +10,7 @@ namespace AIUI.Data
     {
         // SQLite içindeki 'Chats' tablomuzu temsil eden koleksiyon
         public DbSet<Chat> Chats { get; set; }
-
+        public DbSet<Category> Categories { get; set; }
         // Veritabanı bağlantı ayarlarını yaptığımız özel metot
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -27,9 +27,19 @@ namespace AIUI.Data
 
             // Dosyanın tam yolunu belirliyoruz
             string dbPath = Path.Combine(dbFolder, "AiChats.db");
-
             // EF Core'a "SQLite kullan ve dosyayı bu yola kaydet" komutunu veriyoruz
             optionsBuilder.UseSqlite($"Data Source={dbPath}");
+
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Bir kategorinin birden fazla chat'i olabilir, 
+            // bir chat ise sadece bir kategoriye ait olabilir.
+            modelBuilder.Entity<Chat>()
+                .HasOne<Category>()
+                .WithMany(c => c.Chats)
+                .HasForeignKey(c => c.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade); // Kategori silinirse içindeki chatler de silinsin
         }
     }
 }

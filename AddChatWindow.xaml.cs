@@ -3,6 +3,7 @@ using System.Windows;
 // Chat modelini tanıması için bu satır kesinlikle olmalı!
 using AIUI.Models;
 using AIUI.Data;
+using System.Windows.Controls;
 
 namespace AIUI
 {
@@ -15,6 +16,12 @@ namespace AIUI
         public AddChatWindow(string incomingUrl = "")
         {
             InitializeComponent();
+            var db = new AppDbContext();
+            var kalanKategoriler = db.Categories
+                         .OrderBy(c => c.Id)
+                         .Skip(1)
+                         .ToList();
+            cmbCategory.ItemsSource = kalanKategoriler;
             txtUrl.Text = incomingUrl;
         }
 
@@ -25,10 +32,11 @@ namespace AIUI
 
             // Gelen sohbet verisini hafızaya alıyoruz
             _chatToEdit = chatToEdit;
-
+            var db = new AppDbContext();
+            cmbCategory.ItemsSource = db.Categories.ToList();
             // Ekrandaki kutucukları mevcut bilgilerle dolduruyoruz
             txtTitle.Text = chatToEdit.Title;
-            cmbCategory.Text = chatToEdit.Category;
+            cmbCategory.SelectedValue = chatToEdit.CategoryId;
             txtUrl.Text = chatToEdit.Url;
         }
 
@@ -41,7 +49,7 @@ namespace AIUI
                 if (_chatToEdit != null)
                 {
                     _chatToEdit.Title = txtTitle.Text;
-                    _chatToEdit.Category = cmbCategory.Text;
+                    _chatToEdit.CategoryId = (int)cmbCategory.SelectedValue;
                     _chatToEdit.Url = txtUrl.Text;
 
                     db.Chats.Update(_chatToEdit); // Veriyi GÜNCELLE
@@ -52,8 +60,8 @@ namespace AIUI
                     Chat newChat = new Chat
                     {
                         Title = txtTitle.Text,
-                        Category = cmbCategory.Text,
-                        Url = txtUrl.Text,
+                        CategoryId = (int)cmbCategory.SelectedValue,
+                        Url = txtUrl.Text,  
                         AddedDate = DateTime.Now
                     };
                     db.Chats.Add(newChat); // Yeni veri EKLE
@@ -65,4 +73,5 @@ namespace AIUI
             this.DialogResult = true;
         }
     }
+
 }

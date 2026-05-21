@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -19,18 +20,29 @@ namespace AIUI.Models
         public string Url { get; set; }
 
         // Gruplama için kategori (Örn: "Yazılım", "Oyun Fikirleri", "İngilizce")
-        public string Category { get; set; }
+        public int CategoryId { get; set; }
 
         // Eklenme tarihi
         public DateTime AddedDate { get; set; } = DateTime.Now;
-
-        public void OpenChatInBrowser(string url)
+        // SİHİRLİ DOKUNUŞ:
+        // JS'den gelen 'Category' metnini yakalamak için geçici bir property tanımlıyoruz.
+        // [NotMapped] niteliği (attribute) EF Core'a diyor ki: 
+        // "Bu alanı sadece bellekte kullan, sakın veritabanında böyle bir sütun oluşturmaya çalışma!"
+        [NotMapped]
+        public string Category { get; set; }
+        public string AIType
         {
-            Process.Start(new ProcessStartInfo
+            get
             {
-                FileName = url,
-                UseShellExecute = true // Bu ayar, URL'yi sistemin varsayılan tarayıcısında açmasını sağlar
-            });
+                if (string.IsNullOrEmpty(Url)) return "Bilinmeyen";
+
+                // URL'in içindeki domain yapısını güvenli bir şekilde analiz ediyoruz
+                if (Url.Contains("gemini.google.com")) return "Gemini";
+                if (Url.Contains("chatgpt.com") || Url.Contains("chat.openai.com")) return "ChatGPT";
+                if (Url.Contains("claude.ai")) return "Claude";
+
+                return "Web AI"; // Gelecekte eklenebilecek diğer standart web modelleri için
+            }
         }
     }
 

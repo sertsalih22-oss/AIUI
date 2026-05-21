@@ -15,7 +15,7 @@ namespace AIUI
     public partial class MainWindow : Window
     {
         public ObservableCollection<Chat> Chats { get; set; }
-
+        public ObservableCollection<Category> Categories { get; set; }
         public MainWindow()
         {
             InitializeComponent();
@@ -24,18 +24,38 @@ namespace AIUI
             // 1. Veritabanı bağlantımızı açıyoruz
             using (var db = new AppDbContext())
             {
-                // 2. SİHİRLİ KOMUT: "Eğer AiChats.db dosyası ve tabloları yoksa, şu an sıfırdan oluştur."
+                // 🚨 GELİŞTİRME AŞAMASI ÖNLEMİ:
+                // Şemamız (sütunlar ve tablolar) tamamen değiştiği için eski uyumsuz .db dosyasını siliyoruz.
+                //db.Database.EnsureDeleted();
+
+                // Yeni 'Category' tablosu ve 'CategoryId' ilişkisiyle veritabanını sıfırdan tertemiz oluşturuyoruz.
                 db.Database.EnsureCreated();
 
-                // 3. Veritabanındaki tüm sohbetleri çekiyoruz (Şu an içi boş gelecek)
+                // 2. İLK AÇILIŞTA VARSAYILAN KATEGORİLERİ ENJEKTE ETME
+                // Veritabanı sıfırlandığı için sol menü boş kalmasın diye başlangıç kategorilerini ekliyoruz.
+                if (!db.Categories.Any())
+                {
+                    db.Categories.Add(new Category { Name = "Genel" });
+
+                    // Değişiklikleri SQLite veritabanı dosyasına fiziksel olarak kaydet
+                    db.SaveChanges();
+                }
+
+                // 3. VERİLERİ ARAYÜZE (UI) BAĞLAMA
+                // Veritabanındaki güncel kategorileri çekip listenin hafızasına yüklüyoruz
+                var savedCategories = db.Categories.ToList();
+                Categories = new ObservableCollection<Category>(savedCategories);
+
+                // 4. SİHİRLİ BAĞLANTI: XAML'daki 'CategoryList' isimli ListView'u bu koleksiyona bağlıyoruz
+                CategoryList.ItemsSource = Categories;
+
+                // 5. İLK AÇILIŞTA ORTA LİSTEYİ AYARLAMA
+                // Uygulama ilk açıldığında sağ taraftaki sohbet listesi boş kalmasın diye 
+                // veritabanındaki tüm sohbetleri (Chats) çekip orta listeye (ChatList) basıyoruz.
                 var savedChats = db.Chats.OrderByDescending(c => c.AddedDate).ToList();
-
-                // 4. Çektiğimiz gerçek verileri arayüze (ObservableCollection) yüklüyoruz
                 Chats = new ObservableCollection<Chat>(savedChats);
+                ChatList.ItemsSource = Chats;
             }
-
-            // Listeyi arayüze bağlıyoruz
-            ChatList.ItemsSource = Chats;
         }
 
         // ================= YENİ EKLENEN KISIM =================
@@ -141,20 +161,22 @@ namespace AIUI
                     // 4. Gelen listeyi veritabanımıza kaydediyoruz
                     using (var db = new AppDbContext())
                     {
+                        // Veritabanındaki "İçe Aktarılanlar" kategorisinin ID'sini buluyoruz
+                        var iceAktarilanlarCat = db.Categories.FirstOrDefault(c => c.Name == "İçe Aktarılanlar");
+                        int targetCategoryId = iceAktarilanlarCat != null ? iceAktarilanlarCat.Id : 1;
+
                         foreach (var chat in importedChats)
                         {
-                            // Aynı URL'den veritabanında var mı diye kontrol et (Çift kaydı önlemek için)
                             bool exists = db.Chats.Any(c => c.Url == chat.Url);
 
                             if (!exists)
                             {
                                 chat.AddedDate = DateTime.Now;
+                                chat.CategoryId = targetCategoryId; // ARTIK STRING DEĞİL, GEÇERLİ ID'Yİ ATIYORUZ!
                                 db.Chats.Add(chat);
                                 eklenecekSayi++;
                             }
                         }
-
-                        // Değişiklikleri kaydet
                         db.SaveChanges();
                     }
 
@@ -219,43 +241,6 @@ namespace AIUI
                 }
             }
         }
-
-        private void CategoryFilter_Click(object sender, RoutedEventArgs e)
-        {
-            // 1. Hangi butona tıklandığını yakalıyoruz
-            if (sender is Button clickedButton)
-            {
-                // Butonun üzerindeki yazıyı (Content) alıyoruz (Örn: "C# Projeleri")
-                string selectedCategory = clickedButton.Content.ToString();
-
-                // 2. Veritabanına bağlanıp filtreleme yapıyoruz
-                using (var db = new AppDbContext())
-                {
-                    Chats.Clear(); // Ekrandaki mevcut listeyi temizle
-
-                    List<Chat> filteredChats;
-
-                    // Eğer "Tüm Sohbetler" seçildiyse hepsini getir
-                    if (selectedCategory == "Tüm Sohbetler")
-                    {
-                        filteredChats = db.Chats.ToList();
-                    }
-                    // Değilse, veritabanına sadece o kategoriye ait olanları getirmesini söyle
-                    else
-                    {
-                        // LINQ Gücü: SQL'deki "WHERE Category = 'seçilen_kategori'" sorgusunu otomatik oluşturur
-                        filteredChats = db.Chats.Where(c => c.Category == selectedCategory).ToList();
-                    }
-
-                    // 3. Veritabanından gelen filtrelenmiş sonuçları arayüze (ObservableCollection) ekle
-                    foreach (var chat in filteredChats)
-                    {
-                        Chats.Add(chat);
-                    }
-                }
-            }
-        }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             ChatBrowser.Source = new Uri("https://gemini.google.com/app");
@@ -302,6 +287,59 @@ namespace AIUI
                 if (editWindow.ShowDialog() == true)
                 {
                     RefreshChatList();
+                }
+            }
+        }
+        
+        private void AddCategory_Click(object sender, RoutedEventArgs e) 
+        {
+            AddCategoryWindow addWindow = new AddCategoryWindow();
+
+            // Pencereyi "Dialog" olarak açıyoruz (Yani bu pencere kapanmadan arkaya tıklanamaz)
+            addWindow.Owner = this;
+            bool? result = addWindow.ShowDialog();
+
+            // Eğer pencere "Kaydet" butonuna basılıp başarıyla kapandıysa (DialogResult = true olduysa)
+            if (result == true)
+            {
+                // Ana ekrandaki listemizi veritabanından tekrar çekip güncelliyoruz
+                using (var db = new AppDbContext())
+                {
+                    Categories.Clear(); // Eski listeyi temizle
+                    var currentcategories = db.Categories.OrderBy(c => c.Id).ToList();
+                    foreach (var category in currentcategories)
+                    {
+                        Categories.Add(category); // Arayüzü güncelle
+                    }
+                }
+            }
+        }
+        private void CategoryList_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+
+            var selectedCategory = CategoryList.SelectedItem as Category;
+            if (selectedCategory == null) return;
+            using (var db = new AppDbContext())
+            {
+                Chats.Clear(); // Ekrandaki mevcut listeyi temizle
+
+                List<Chat> filteredChats;
+                // Eğer "Tüm Sohbetler" seçildiyse hepsini getir
+                if (selectedCategory.Name == "Genel")
+                {
+                    filteredChats = db.Chats.ToList();
+                }
+                // Değilse, veritabanına sadece o kategoriye ait olanları getirmesini söyle
+                else
+                {
+                    // LINQ Gücü: SQL'deki "WHERE Category = 'seçilen_kategori'" sorgusunu otomatik oluşturur
+                    filteredChats = db.Chats.Where(c => c.CategoryId == selectedCategory.Id).ToList();
+                }
+
+                // 3. Veritabanından gelen filtrelenmiş sonuçları arayüze (ObservableCollection) ekle
+                foreach (var chat in filteredChats)
+                {
+                    Chats.Add(chat);
                 }
             }
         }

@@ -14,15 +14,26 @@
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Background="#1F2937" Padding="15">
-            <StackPanel>
-                <TextBlock Text="Kategoriler" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <Button Content="Tüm Sohbetler" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-                <Button Content="C# Projeleri" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-                <Button Content="Oyun Modlama" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-                <Button Content="Yapay Zeka" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-                <Button Content="İçe Aktarılanlar" Click="CategoryFilter_Click" Background="Transparent" Foreground="#D1D5DB" BorderThickness="0" HorizontalAlignment="Left" Margin="0,5" FontSize="14" Cursor="Hand"/>
-            </StackPanel>
+                <TextBlock Grid.Row="0" Text="Kategoriler" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                <ListView x:Name="CategoryList" Grid.Row="1" Background="Transparent" BorderThickness="0" SelectionChanged="CategoryList_SelectionChanged">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" Foreground="#D1D5DB" FontSize="14" Padding="0,8" Cursor="Hand"/>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <Button Grid.Row="2" Content="+ Yeni Kategori Ekle" Click="AddCategory_Click" 
+                Background="#3B82F6" Foreground="White" BorderThickness="0" Height="30" Margin="0,10,0,0" Cursor="Hand"/>
+            </Grid>
         </Border>
 
         <Grid Grid.Column="1" Margin="15" Background="White">
@@ -32,7 +43,7 @@
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0" Margin="0,0,0,15">
-                <TextBlock Text="Sohbetlerin" FontSize="20" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBlock x:Name="BenimTextBlockum" Text="Sohbetlerin" FontSize="20" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="🔄 Geçmişi Çek" Width="100" Height="30" Background="#3B82F6" Foreground="White" BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" Click="SyncChats_Click"/>
@@ -56,6 +67,11 @@
                             <StackPanel>
                                 <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium" Foreground="#1F2937" TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#6B7280" Margin="0,4,0,0"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock Text="{Binding AIType}" FontSize="11" FontWeight="Bold" Foreground="#3B82F6" Margin="0,0,10,0"/>
+
+                                    <TextBlock Text="{Binding AddedDate, StringFormat=\{0:dd.MM.yyyy\}}" FontSize="11" Foreground="#6B7280"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </DataTemplate>

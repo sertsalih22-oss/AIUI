@@ -8,7 +8,7 @@
 
     <Grid Margin="20">
         <StackPanel>
-            <TextBlock Text="Sohbet Bilgileri" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+            <TextBlock x:Name="BenimTextBlockum" Text="Sohbet Bilgileri" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
 
             <TextBlock Text="Başlık (Örn: C# Hata Çözümü)" Foreground="#4B5563" Margin="0,0,0,5"/>
             <TextBox x:Name="txtTitle" Padding="5" Height="30" Margin="0,0,0,15" BorderBrush="#D1D5DB" />
@@ -17,11 +17,9 @@
             <TextBox x:Name="txtUrl" Padding="5" Height="30" Margin="0,0,0,15" BorderBrush="#D1D5DB" />
 
             <TextBlock Text="Kategori" Foreground="#4B5563" Margin="0,0,0,5"/>
-            <ComboBox x:Name="cmbCategory" Padding="5" Height="30" Margin="0,0,0,20" BorderBrush="#D1D5DB">
-                <ComboBoxItem Content="C# Projeleri" IsSelected="True"/>
-                <ComboBoxItem Content="Oyun Modlama"/>
-                <ComboBoxItem Content="Yapay Zeka"/>
-                <ComboBoxItem Content="Genel"/>
+            <ComboBox x:Name="cmbCategory" Padding="5" Height="30" Margin="0,0,0,20" BorderBrush="#D1D5DB"
+                        DisplayMemberPath="Name" 
+                        SelectedValuePath="Id">
             </ComboBox>
 
             <Button Content="Veritabanına Kaydet" Background="#10B981" Foreground="White" Height="35" BorderThickness="0" Cursor="Hand" Click="SaveButton_Click"/>
