@@ -24,4 +24,4 @@ Projeyi kendi bilgisayarınızda çalıştırmak için:
 
 1. Repoyu bilgisayarınıza klonlayın:
    ```bash
-   git clone [https://github.com/sertsalih22-oss/AIUI.git](https://github.com/sertsalih22-oss/AIUI.git)
+   git clone [https://github.com/sertsalih22-oss/ThreadBase.git](https://github.com/sertsalih22-oss/ThreadBase.git)
